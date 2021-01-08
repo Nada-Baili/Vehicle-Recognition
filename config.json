@@ -1,0 +1,13 @@
+{
+  "model": "resnet50", // or "resnet18", "resnet101"
+  "num_classes": 459,
+  "input_shape": 224,
+  "num_epochs": 50,
+  "batch_size": 32,
+  "num_workers": 4,
+  "Lr": 0.01,
+  "momentum": 0.9,
+  "lr_decay_iter": 30,
+  "lr_decay_factor": 0.1
+
+}

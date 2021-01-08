@@ -1,0 +1,170 @@
+import os, time, argparse, commentjson
+from tqdm import tqdm
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torchvision import datasets, transforms, models
+import matplotlib.pyplot as plt
+import numpy as np
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--Data_DIR', default='./data')
+parser.add_argument('--config_Path', default='./config.json')
+parser.add_argument('--Output_Path', default='./results')
+
+def prepare_data(args):
+    data_transforms = {
+        'train': transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(args.config_Path["input_shape"]),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ]),
+        'val': transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(args.config_Path["input_shape"]),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ]),
+    }
+
+    image_datasets = {x: datasets.ImageFolder(os.path.join(args.Data_DIR, x),
+                                              data_transforms[x])
+                      for x in ['train', 'val']}
+    class_names = image_datasets['train'].classes
+    assert (len(class_names) == args.config_Path["num_classes"])
+    dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x],
+                                                  batch_size=args.config_Path["batch_size"], shuffle=True,
+                                                  num_workers=args.config_Path["num_workers"]) for x in ['train', 'val']}
+
+    return dataloaders, class_names
+
+def plot_figures(metrics, title, output_path):
+    plt.figure()
+    for mode in metrics:
+        plt.plot(metrics[mode], label = mode)
+    plt.xlabel("Epochs")
+    plt.ylabel(title.split(" ")[3])
+    plt.title(title)
+    plt.legend()
+    plt.savefig(os.path.join(output_path, title.split(" ")[3]+".png"))
+
+def train(dataloaders, classes, args):
+
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    if args.config_Path["model"] == "resnet18":
+        model = models.resnet50(pretrained=True)
+    elif args.config_Path["model"] == "resnet50":
+        model = models.resnet50(pretrained=True)
+    elif args.config_Path["model"] == "resnet101":
+        model = models.resnet101(pretrained=True)
+    else:
+        print("Unrecognized model. Please pick resnet18, resnet50 or resnet101 in the configuration file")
+    num_ftrs = model.fc.in_features
+    model.fc = nn.Linear(num_ftrs, len(classes))
+
+    model = model.to(device)
+
+    criterion = nn.CrossEntropyLoss()
+    optimizer_ft = optim.SGD(model.parameters(), lr=args.config_Path["Lr"], momentum=args.config_Path["momentum"])
+
+    val_acc_history = []
+    train_acc_history = []
+    train_loss_history = []
+    val_loss_history = []
+
+    true_labels = []
+    predictions = []
+
+    best_acc = 0.0
+    t0 = time.time()
+    num_epochs = args.config_Path["num_epochs"]
+
+    for epoch in range(num_epochs):
+        print('Epoch {}/{}'.format(epoch+1, num_epochs))
+        print('-' * 10)
+
+        # Each epoch has a training and validation phase
+        for phase in ['train', 'val']:
+            if phase == 'train':
+                model.train()  # Set model to training mode
+                print("Training ...")
+            else:
+                model.eval()  # Set model to evaluate mode
+                print("Validation ...")
+
+            running_loss = 0.0
+            running_corrects = 0
+
+            # Iterate over data.
+            for inputs, labels in tqdm(dataloaders[phase], position = 0):
+                inputs = inputs.to(device)
+                labels = labels.to(device)
+
+                # zero the parameter gradients
+                optimizer_ft.zero_grad()
+
+                # forward
+                # track history if only in train
+                with torch.set_grad_enabled(phase == 'train'):
+                    # Get model outputs and calculate loss
+                    outputs = model(inputs)
+                    loss = criterion(outputs, labels)
+                    _, preds = torch.max(outputs, 1)
+
+                    # backward + optimize only if in training phase
+                    if phase == 'train':
+                        loss.backward()
+                        optimizer_ft.step()
+
+                # statistics
+                running_loss += loss.item() * inputs.size(0)
+                running_corrects += torch.sum(preds == labels.data)
+
+                true_labels.append(labels.cpu().numpy())
+                predictions.append(preds.cpu().numpy())
+
+            epoch_loss = running_loss / len(dataloaders[phase].dataset)
+            epoch_acc = running_corrects.double() / len(dataloaders[phase].dataset)
+
+            print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
+
+            # deep copy the model
+            if phase == 'val' and epoch_acc > best_acc:
+                best_acc = epoch_acc
+                torch.save(model.state_dict(), os.path.join(args.Output_Path, "best_model_try.pth"))
+            if phase == 'val':
+                val_acc_history.append(epoch_acc)
+                val_loss_history.append(epoch_loss)
+            if phase == 'train':
+                train_acc_history.append(epoch_acc)
+                train_loss_history.append(epoch_loss)
+
+            # lr decay
+            if epoch == args.config_Path["lr_decay_iter"]:
+                optimizer_ft.param_groups[0]["lr"] *= args.config_Path["lr_decay_factor"]
+        print()
+
+    time_elapsed = time.time() - t0
+    print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
+    print('Best val Acc: {:4f}'.format(best_acc))
+
+    true_labels = np.concatenate(true_labels, axis=0)
+    predictions = np.concatenate(predictions, axis=0)
+
+    # Visualization of the results
+    plot_figures({"train": train_acc_history, "validation": val_acc_history},
+                 "Evolution of the accuracy during the training", args.Output_Path)
+    plot_figures({"train": train_loss_history, "validation": val_loss_history},
+                 "Evolution of the loss during the training", args.Output_Path)
+
+if __name__ == '__main__':
+    args = parser.parse_args()
+    with open(args.config_Path) as json_file:
+        args.config_Path = commentjson.load(json_file)
+    print("Preparing the data ...")
+    dataloaders, class_names = prepare_data(args)
+    print("Model training initiation ...")
+    print()
+    train(dataloaders, class_names, args)

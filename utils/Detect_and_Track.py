@@ -73,6 +73,9 @@ def detect_track(video_path):
 	with open(r"./config.json") as json_file:
 		config = commentjson.load(json_file)
 
+	if os.path.exists('./GUI_output'):
+		os.mkdir('./GUI_output')
+		
 	if os.path.exists('./GUI_output/cropped_cars'):
 		shutil.rmtree('./GUI_output/cropped_cars')
 	os.mkdir('./GUI_output/cropped_cars')

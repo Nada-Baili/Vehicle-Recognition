@@ -16,14 +16,13 @@ def numericalSort(value):
     parts[1::2] = map(int, parts[1::2])
     return parts
 
-def make_video(database, topk, idx, fps, coords, final_pred, predictions):
+def make_video(database, topk, idx, fps, coords, final_pred):
     if not os.path.exists("./GUI_output/extracted_clips"):
         os.mkdir("./GUI_output/extracted_clips")
     entry = int(np.round(database.iloc[idx]['entry'].total_seconds()*fps))
     exit = int(np.round(database.iloc[idx]['exit'].total_seconds()*fps))
     video_name = '_'.join(
         [database.iloc[idx]['make'], database.iloc[idx]['model'], database.iloc[idx]['year']])
-    car_nb = list(predictions.keys())[idx]
     image_folder = r'./GUI_output/original_frames'
     video = None
     for img in sorted(os.listdir(image_folder), key=numericalSort):
@@ -67,7 +66,7 @@ def intersect(*d):
         result = result.intersection(s)
     return result
 
-def search(database, fps, entry_make, entry_model, entry_year, entry_colour, coords, final_pred, predictions):
+def search(database, fps, entry_make, entry_model, entry_year, entry_colour, coords, final_pred):
     global widgets
     criteria = {"make": str(entry_make.get()),
                 "model": str(entry_model.get()),
@@ -107,7 +106,7 @@ def search(database, fps, entry_make, entry_model, entry_year, entry_colour, coo
             car_name = "_".join([database[i].iloc[j].make, database[i].iloc[j].model, database[i].iloc[j].year])
             car_label = Label(main_frame, text=car_name)
             car_label.grid(row=r, column=0, sticky=W, padx=x, pady=8, columnspan=2)
-            extract = Button(main_frame, text="View", command=(lambda i=i, j=j: make_video(database[i],i, j, fps, coords, final_pred, predictions)), height=1, width=3)
+            extract = Button(main_frame, text="View", command=(lambda i=i, j=j: make_video(database[i],i, j, fps, coords, final_pred)), height=1, width=3)
             extract.grid(row=r, column=0, sticky=W, padx=x+150, pady=8, columnspan=2)
             r += 1
             widgets.append(car_label)
@@ -172,7 +171,7 @@ def main():
     entry_colour = Entry(main_frame)
     entry_colour.grid(row=8, column=0, sticky=W, padx=80, pady=8, columnspan=2)
 
-    play = Button(main_frame, text="Search", command=(lambda: search(database, fps, entry_make, entry_model, entry_year, entry_colour, BBs_coordinates, final_predictions, predictions)))
+    play = Button(main_frame, text="Search", command=(lambda: search(database, fps, entry_make, entry_model, entry_year, entry_colour, BBs_coordinates, final_predictions)))
     play.grid(row=9, column=0, sticky=W, padx=130, pady=8, columnspan=2)
 
 root = Tk()

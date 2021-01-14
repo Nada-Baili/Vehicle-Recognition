@@ -1,13 +1,13 @@
 {
   "model": "resnet50", // or "resnet18", "resnet101"
-  "num_classes": 459,
+  "selected_model_path": "./VMMR_model/VMMR_model_2522c.t7", // This parameter is useful for model evaluation in test_VMMR.py and for the GUI
+  "num_classes": 2522,
   "input_shape": 224,
-  "num_epochs": 50,
+  "num_epochs": 200,
   "batch_size": 32,
   "num_workers": 4,
-  "Lr": 0.01,
+  "Lr": 0.1,
   "momentum": 0.9,
-  "lr_decay_iter": 30,
+  "lr_decay_iter": 50,
   "lr_decay_factor": 0.1
-
 }

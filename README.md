@@ -2,13 +2,13 @@
 ## Introduction
 Vehicle Make and Model Recognition (VMMR) has evolved into a signiﬁcant subject of study due to its importance in numerous Intelligent Transportation Systems (ITS), such as autonomous navigation, traffic analysis, traffic surveillance and security systems. A highly accurate VMMR system is of a great need, in order to optimize the costs and the human workload. The VMMR problem is a ﬁne-grained multi-class classification task with a peculiar set of issues.
 
-This repo enables to train and evaluate a VMMR model that is able to predict the make, model and manufacture year of a vehicle based on its image. For this purpose, a fine-grained large-scale dataset with 2522 diverse classes was used. It also proposes a comprehensive system which can be used for automated vehicular surveillance. The VMMR system takes as input a surveillance video footage, analyzes it by first detecting vehicles and people (using [YOLO](https://github.com/pjreddie/darknet/wiki/YOLO:-Real-Time-Object-Detection)), tracks the vehicles (using [SORT](https://github.com/abewley/sort) throughout the video, performs the VMMR task to predict the make, model and manufacture year, recognizes the colour (by clustering the rgb triplets) and finally summarizes the video by generating a database containing all the extracted metadata. The system is made end-user through a Graphical User Interface that additionally allows the user to launch queries to look for a specific vehicle based on descriptions. This can be regarded as an efficient tool for law enforcement agencies that enables them to automate, improve and accelerate the search for suspicious vehicles (See demo [here](https://drive.google.com/file/d/1kJOdUlnQsFEwyUu6nr0yjLFTbqbTzeua/view?usp=sharing))
+This repository enables to train and evaluate a VMMR model that is able to predict the make, model and manufacture year of a vehicle based on its image. For this purpose, a fine-grained large-scale dataset with 2522 diverse classes was used. This repository also proposes a comprehensive system which can be used for automated vehicular surveillance. The VMMR system takes as input a surveillance video footage, analyzes it by first detecting vehicles and people (using [YOLO](https://github.com/pjreddie/darknet/wiki/YOLO:-Real-Time-Object-Detection)), tracks the vehicles (using [SORT](https://github.com/abewley/sort)) throughout the video, performs the VMMR task to predict the make, model and manufacture year, recognizes the colour (by clustering the RGB triplets) and finally summarizes the video by generating a database containing all the extracted metadata. The system is made end-user through a Graphical User Interface that additionally allows the user to launch queries to look for a specific vehicle based on descriptions. This can be regarded as an efficient tool for law enforcement agencies that enables them to automate, improve and accelerate the search for suspicious vehicles (See demo [here](https://drive.google.com/file/d/1kJOdUlnQsFEwyUu6nr0yjLFTbqbTzeua/view?usp=sharing))
 
 ## License
-This repo is released under the GNU License (refer to the LICENSE file for details) to promote the open use of the system and future improvements.
+This repository is released under the GNU License (refer to the LICENSE file for details) to promote the open use of the system and future improvements.
 
 ## Dependencies
-This code uses a Pytorch environment. To run it, you need to install:
+This repository uses a Pytorch environment. To run it, you need to install:
 - Torch with GPU (the used version is 1.3.1, any updated version should run fine)
 - opencv-contrib-python (the used version is 4.5.1)
 
@@ -31,7 +31,7 @@ The best performing model will be saved in "./VMMR_model/best_model.pth". Figure
 ### GUI
 See demo [here](https://drive.google.com/file/d/1kJOdUlnQsFEwyUu6nr0yjLFTbqbTzeua/view?usp=sharing).
 
-To use the GUI, you need to [download](https://drive.google.com/drive/folders/1e2Vus6Gcx6PkvJEvnIiXMOmwla2aLSdF?usp=sharing) the pretrained YOLO weights and place them in the right directory "./utils/yolo-coco/", then run:
+To use the GUI, you need to [download](https://drive.google.com/drive/folders/1e2Vus6Gcx6PkvJEvnIiXMOmwla2aLSdF?usp=sharing) the pretrained YOLO weights and place them in the right directory "./utils/yolo-coco", then run:
 
 `$ python run_GUI.py`
 

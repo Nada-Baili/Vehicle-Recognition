@@ -18,6 +18,14 @@ This repository uses a Pytorch environment. To run it, you need to install:
 To evaluate the pretrained VMMR model, first [download](https://drive.google.com/drive/folders/1kFRZNAPPry7AAlq9F5L2Nuf-AtZNcg6o?usp=sharing) the pretrained weights and place them under the directory "./VMMR_model". The pretrained model uses a ResNet50 CNN architecture. So, make sure to specify the right architecture name in the parameter "model" in "./config.json". Finally, run:
 
 `$ python test_VMMR.py`
+
+The available model reaches the following results on the designed validation set with 2522 classes:
+
+|           | Validation set |
+|-----------|:--------:|
+| Top 1 (%) |   50.74  |
+| Top 3 (%) |   80.01  |
+| Top 5 (%) |   89.08  |
 #### Training
 To train the model from scratch, you need to download the vehicle dataset. Two datasets were used: [VMMRdb dataset](https://github.com/faezetta/VMMRdb) and [CompCars dataset](http://mmlab.ie.cuhk.edu.hk/datasets/comp_cars/). In this work, the two datasets were merged based on the common classes. Then the classes with less than 30 images were filtered out. Finally, the resulting dataset that was used in this project consists of 2522 classes. 
 

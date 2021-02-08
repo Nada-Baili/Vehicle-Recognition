@@ -10,7 +10,7 @@ import numpy as np
 def prepare_data(config):
     data_transforms = {
         'train': transforms.Compose([
-            transforms.Resize(config["input_shape"]),
+            transforms.Resize(256),
             transforms.CenterCrop(config["input_shape"]),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
@@ -46,9 +46,11 @@ def plot_figures(metrics, title):
     plt.savefig(os.path.join("./VMMR_model", title.split(" ")[3]+".png"))
 
 def train(dataloaders, classes, config):
+    if not os.path.exists("./VMMR_model"):
+        os.mkdir("./VMMR_model")
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     if config["model"] == "resnet18":
-        model = models.resnet50(pretrained=True)
+        model = models.resnet18(pretrained=True)
     elif config["model"] == "resnet50":
         model = models.resnet50(pretrained=True)
     elif config["model"] == "resnet101":
@@ -119,7 +121,7 @@ def train(dataloaders, classes, config):
             # deep copy the model
             if phase == 'val' and epoch_acc > best_acc:
                 best_acc = epoch_acc
-                torch.save(model.state_dict(), os.path.join("./VMMR_model/best_model.pth"))
+                torch.save(model.state_dict(), os.path.join("./VMMR_model/best_model_adam.pth"))
             if phase == 'val':
                 val_acc_history.append(epoch_acc)
                 val_loss_history.append(epoch_loss)
